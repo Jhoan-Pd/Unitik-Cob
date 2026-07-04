@@ -1,0 +1,10 @@
+# Never copy host installs/builds into images — they contain
+# machine-specific symlinks and stale artifacts
+**/node_modules
+**/dist
+**/coverage
+.git
+.env
+.env.*
+!.env.example
+**/*.log
