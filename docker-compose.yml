@@ -1,0 +1,76 @@
+# Unitik-Cob — ambiente de desarrollo completo con un solo comando:
+#   docker compose up -d
+# Servicios: PostgreSQL 16, Redis 7, API NestJS, Web React
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: unitik-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-unitik}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-unitik_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-unitik_cob}
+      TZ: America/Bogota
+    ports:
+      # Host 5433 → container 5432: el equipo de desarrollo tiene un
+      # PostgreSQL local de Windows ocupando el 5432
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-unitik} -d ${POSTGRES_DB:-unitik_cob}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: unitik-redis
+    restart: unless-stopped
+    # Persistencia AOF: las colas BullMQ sobreviven reinicios (política de continuidad)
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: unitik-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-unitik}:${POSTGRES_PASSWORD:-unitik_dev_password}@postgres:5432/${POSTGRES_DB:-unitik_cob}?schema=public
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      API_PORT: 3000
+      TZ: America/Bogota
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: unitik-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
+
+volumes:
+  postgres_data:
+  redis_data:

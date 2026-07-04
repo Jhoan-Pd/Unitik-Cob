@@ -1,0 +1,20 @@
+name: Deploy
+
+# El despliegue a producción (servidor UNITIK en Cumbitara) se activa manualmente.
+# Se completará en la Fase 4 (Transición) de OpenUP.
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker images
+        run: docker compose -f docker-compose.prod.yml build
+
+      # TODO (Fase 4 — Transición): publicar imágenes y desplegar al servidor
+      # de UNITIK vía SSH cuando el ambiente de pruebas esté definido.
+      - name: Placeholder
+        run: echo "Despliegue se configura en Fase 4 (Transición)"

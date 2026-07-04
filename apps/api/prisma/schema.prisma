@@ -1,0 +1,420 @@
+// Unitik-Cob — domain model
+// IT Governance under ISO/IEC 38500 — every critical entity is traceable via AuditLog.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// USERS AND ROLES (4 roles per manager interview)
+// ============================================================
+
+model User {
+  id           String     @id @default(uuid())
+  documentId   String     @unique // cédula
+  firstName    String
+  lastName     String
+  email        String     @unique
+  phone        String
+  passwordHash String
+  role         Role
+  isActive     Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  client       Client?
+  auditLogs    AuditLog[]
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN // full control
+  TECHNICIAN // installations, tickets, plan assignment
+  CASHIER // cash payments
+  CLIENT // self-service portal
+}
+
+// ============================================================
+// CLIENTS
+// ============================================================
+
+model Client {
+  id               String          @id @default(uuid())
+  userId           String          @unique
+  user             User            @relation(fields: [userId], references: [id])
+  clientCode       String          @unique // internal UNITIK code
+  address          String
+  neighborhood     String?
+  municipality     String          @default("Cumbitara")
+  department       String          @default("Nariño")
+  gpsLat           Float?
+  gpsLng           Float?
+  serviceType      ServiceType
+  paymentModality  PaymentModality
+  installationDate DateTime
+  status           ClientStatus    @default(ACTIVE)
+  subscriptions    Subscription[]
+  invoices         Invoice[]
+  tickets          Ticket[]
+  createdAt        DateTime        @default(now())
+
+  @@map("clients")
+}
+
+enum ServiceType {
+  FIBER // fiber optics (urban area)
+  RADIO // radio link (rural area)
+}
+
+enum PaymentModality {
+  PREPAID
+  POSTPAID
+}
+
+enum ClientStatus {
+  ACTIVE
+  SUSPENDED
+  CUT
+  CANCELLED
+}
+
+// ============================================================
+// SERVICE PLANS (per manager interview)
+// Seed: FIBER 20/30/40/100 Mbps at $50k/$60k/$70k/$100k
+//       RADIO 12/15 Mbps at $50k/$60k — TV add-on $10k/month
+// ============================================================
+
+model Plan {
+  id              String         @id @default(uuid())
+  name            String
+  description     String
+  serviceType     ServiceType
+  speedMbps       Int
+  monthlyPrice    Decimal        @db.Decimal(12, 2)
+  installationFee Decimal        @default(50000) @db.Decimal(12, 2)
+  reusePercent    Float? // reuse percentage (admin-visible)
+  includesTv      Boolean        @default(false)
+  tvPrice         Decimal?       @db.Decimal(12, 2)
+  isActive        Boolean        @default(true)
+  subscriptions   Subscription[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@map("plans")
+}
+
+// ============================================================
+// SUBSCRIPTIONS
+// ============================================================
+
+model Subscription {
+  id        String             @id @default(uuid())
+  clientId  String
+  client    Client             @relation(fields: [clientId], references: [id])
+  planId    String
+  plan      Plan               @relation(fields: [planId], references: [id])
+  startDate DateTime
+  endDate   DateTime?
+  status    SubscriptionStatus @default(ACTIVE)
+  cutOffDay Int                @default(10) // configurable cut-off day
+  invoices  Invoice[]
+
+  @@map("subscriptions")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+  GRACE_PERIOD // under payment promise
+}
+
+// ============================================================
+// INVOICES AND PAYMENTS
+// ============================================================
+
+model Invoice {
+  id                    String        @id @default(uuid())
+  invoiceNumber         String        @unique
+  clientId              String
+  client                Client        @relation(fields: [clientId], references: [id])
+  subscriptionId        String
+  subscription          Subscription  @relation(fields: [subscriptionId], references: [id])
+  period                String // "2026-06"
+  issueDate             DateTime
+  dueDate               DateTime
+  subtotal              Decimal       @db.Decimal(12, 2)
+  interest              Decimal       @default(0) @db.Decimal(12, 2) // late-payment interest
+  discount              Decimal       @default(0) @db.Decimal(12, 2)
+  total                 Decimal       @db.Decimal(12, 2)
+  status                InvoiceStatus @default(PENDING)
+  electronicInvoiceUrl  String? // DIAN URL
+  electronicInvoiceCufe String? // DIAN CUFE
+  payments              Payment[]
+  createdAt             DateTime      @default(now())
+
+  @@map("invoices")
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
+  PROMISE_TO_PAY
+}
+
+model Payment {
+  id            String        @id @default(uuid())
+  invoiceId     String
+  invoice       Invoice       @relation(fields: [invoiceId], references: [id])
+  amount        Decimal       @db.Decimal(12, 2)
+  paymentMethod PaymentMethod
+  reference     String? // Nequi/transfer receipt number
+  proofUrl      String? // uploaded proof URL
+  validatedBy   String? // userId of validator
+  validatedAt   DateTime?
+  status        PaymentStatus @default(PENDING_VALIDATION)
+  autoValidated Boolean       @default(false) // validated via gateway webhook
+  paidAt        DateTime
+  createdAt     DateTime      @default(now())
+
+  @@map("payments")
+}
+
+enum PaymentMethod {
+  CASH
+  NEQUI
+  BANK_TRANSFER
+  ONLINE_GATEWAY // Wompi/PSE
+  DAVIPLATA
+}
+
+enum PaymentStatus {
+  PENDING_VALIDATION
+  VALIDATED
+  REJECTED // fake receipt
+  REFUNDED
+}
+
+// ============================================================
+// PAYMENT PROMISES (policy identified in interview)
+// ============================================================
+
+model PaymentPromise {
+  id            String   @id @default(uuid())
+  clientId      String
+  invoiceId     String
+  promiseDate   DateTime // committed date
+  daysExtension Int // 7 or 15 extra days
+  approvedBy    String // admin userId
+  fulfilled     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  @@map("payment_promises")
+}
+
+// ============================================================
+// NETWORK INFRASTRUCTURE (MikroTik RouterBoard)
+// ============================================================
+
+model NetworkDevice {
+  id             String          @id @default(uuid())
+  name           String
+  deviceType     DeviceType
+  ipAddress      String
+  apiPort        Int             @default(8728)
+  apiUsername    String
+  apiPasswordEnc String // AES-256-GCM encrypted, never plaintext
+  location       String
+  isMain         Boolean         @default(false)
+  isActive       Boolean         @default(true)
+  lastPing       DateTime?
+  networkAccess  NetworkAccess[]
+
+  @@map("network_devices")
+}
+
+enum DeviceType {
+  ROUTERBOARD
+  OLT
+  AP
+  SWITCH
+  OTHER
+}
+
+model NetworkAccess {
+  id           String        @id @default(uuid())
+  clientId     String
+  deviceId     String
+  device       NetworkDevice @relation(fields: [deviceId], references: [id])
+  macAddress   String?
+  ipAssigned   String?
+  pppoeUser    String?
+  pppoePassEnc String?
+  isEnabled    Boolean       @default(true)
+  lastAction   String? // "enabled" | "disabled" | "reconnected"
+  lastActionAt DateTime?
+
+  @@map("network_access")
+}
+
+// ============================================================
+// SUPPORT TICKETS
+// ============================================================
+
+model Ticket {
+  id           String       @id @default(uuid())
+  ticketNumber String       @unique
+  clientId     String
+  client       Client       @relation(fields: [clientId], references: [id])
+  createdById  String
+  assignedToId String? // assigned technician
+  title        String
+  description  String
+  status       TicketStatus @default(OPEN)
+  priority     Priority     @default(MEDIUM)
+  category     String // INSTALLATION | SUPPORT | BILLING | CANCELLATION
+  createdAt    DateTime     @default(now())
+  closedAt     DateTime?
+
+  @@map("tickets")
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// ============================================================
+// INSTALLATION RECORD (technician's signed record)
+// ============================================================
+
+model InstallationRecord {
+  id                  String      @id @default(uuid())
+  clientId            String
+  technicianId        String
+  serviceType         ServiceType
+  cableMeters         Float? // for radio link
+  equipmentList       Json // equipment used
+  clientPaidEquipment Boolean     @default(false)
+  observations        String?
+  installationDate    DateTime
+  signedUrl           String? // client digital signature
+
+  @@map("installation_records")
+}
+
+// ============================================================
+// AUDIT — CORE OF ISO/IEC 38500
+// Append-only: audit records are never updated or deleted.
+// ============================================================
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String // CREATE | UPDATE | DELETE | LOGIN | LOGOUT | RECONNECT | SUSPEND
+  entity    String // Client | Payment | Invoice | NetworkAccess...
+  entityId  String?
+  oldValues Json?
+  newValues Json?
+  ipAddress String?
+  userAgent String?
+  policyRef String? // applicable ISO/IEC 38500 principle
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_log")
+}
+
+// ============================================================
+// SYSTEM CONFIGURATION (admin-editable parameters)
+// Golden rule #3: prices, rates and cut-off days are never hardcoded.
+// ============================================================
+
+model SystemConfig {
+  key         String   @id
+  value       String
+  description String?
+  updatedBy   String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_config")
+}
+
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+
+model Notification {
+  id        String              @id @default(uuid())
+  clientId  String?
+  userId    String?
+  channel   NotificationChannel
+  type      String // OVERDUE_REMINDER | RECONNECTION | INVOICE_ISSUED | PROMISE_REMINDER
+  content   String
+  status    NotificationStatus  @default(PENDING)
+  sentAt    DateTime?
+  error     String?
+  createdAt DateTime            @default(now())
+
+  @@map("notifications")
+}
+
+enum NotificationChannel {
+  EMAIL
+  WHATSAPP
+  SMS
+  IN_APP
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  READ
+}
+
+// ============================================================
+// EXPERIMENTAL METRICS (OpenUP Phase 4 — Transition validation)
+// ============================================================
+
+model OperationalMetric {
+  id          String     @id @default(uuid())
+  metricType  MetricType
+  phase       Phase
+  value       Float
+  measuredAt  DateTime   @default(now())
+  contextJson Json?
+
+  @@map("operational_metrics")
+}
+
+enum MetricType {
+  RECONNECTION_TIME_MINUTES
+  ADMIN_REWORK_COUNT
+  COMPLAINT_COUNT
+  TRACEABILITY_PERCENT
+}
+
+enum Phase {
+  BASELINE // before intervention
+  POST_INTERVENTION // after intervention
+}
