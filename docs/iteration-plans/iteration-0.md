@@ -1,6 +1,6 @@
 # Plan de Iteración 0 — Fase de Inicio (OpenUP)
 
-**Duración:** 1 semana · **Fecha:** julio 2026
+**Duración:** 1 semana · **Fecha:** julio 2026 · **Estado: ✅ CERRADA (2026-07-04)**
 
 ## Objetivos
 
@@ -26,13 +26,21 @@ Establecer la base técnica y los artefactos OpenUP de la Fase de Inicio para qu
 - Autenticación JWT, RBAC, interceptor de auditoría → Iteración 1–2 (Elaboración)
 - Módulos de negocio (clientes, facturas, pagos, red) → Iteraciones 3–6 (Construcción)
 
-## Criterios de salida
+## Criterios de salida — verificados al cierre
 
-1. `docker compose up -d` levanta el ambiente completo.
-2. `pnpm --filter @unitik/api prisma:migrate` aplica la migración en frío desde cero.
-3. `pnpm lint`, `pnpm typecheck` y `pnpm test` pasan sin errores.
-4. Artefactos OpenUP de Inicio revisados y versionados.
+1. ✅ `docker compose up -d` levanta el ambiente completo (4 contenedores: postgres, redis, api, web).
+2. ✅ Migración `20260704224759_init` aplicada en frío desde cero.
+3. ✅ `pnpm lint`, `pnpm typecheck`, `pnpm test` y `pnpm test:e2e` pasan sin errores.
+4. ✅ Artefactos OpenUP versionados en git (rama `main`).
 
-## Demo de cierre
+## Demo de cierre — realizada 2026-07-04
 
-Ambiente corriendo + `/health` verde + recorrido por visión, casos de uso y riesgos.
+- `/health` respondió `{"status":"ok", database:"up", redis:"up"}` directo (3000) y vía Nginx (8080).
+- Swagger operativo en `/api/docs`; seed verificado (6 planes, 8 configs, ADMIN).
+- Recorrido por visión, casos de uso, riesgos y matriz ISO/IEC 38500.
+
+## Notas técnicas de la iteración
+
+- `bcryptjs` reemplaza a `bcrypt`: el build nativo de node-pre-gyp crashea pnpm en el equipo de desarrollo Windows.
+- PostgreSQL del compose expone **5433** en el host (un PostgreSQL local de Windows ocupa el 5432).
+- Prisma genera para `native` + `linux-musl-openssl-3.0.x` (imagen Alpine); la imagen instala `openssl`.

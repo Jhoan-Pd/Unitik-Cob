@@ -24,7 +24,25 @@ Leyenda: ✅ cubierto · 🔶 parcial/en diseño · ⬜ pendiente
 
 ## Historial por iteración
 
-### Iteración 0 (Fase Inicio) — 2026-07
-- Monorepo, schema Prisma completo (incluye `AuditLog`, `SystemConfig`, `OperationalMetric`), Docker Compose con Redis persistente, seed con parámetros configurables y health check.
-- Principio de **Adquisición** cubierto: stack justificado y fijado.
-- Resto de principios: en diseño (modelo de datos y casos de uso los contemplan).
+### Iteración 0 (Fase Inicio) — CERRADA 2026-07-04
+**Entregado:**
+- Monorepo pnpm (apps/api NestJS, apps/web React+Vite, packages/shared-types), schema Prisma completo (15 modelos, 14 enums, incluye `AuditLog`, `SystemConfig`, `OperationalMetric`) con migración `init` aplicable en frío.
+- Docker Compose con PostgreSQL 16, Redis 7 (AOF), API y Web — un solo comando levanta el ambiente.
+- Seed: 6 planes (4 Fibra + 2 Radio con precios del documento), 8 parámetros de `system_config`, usuario ADMIN.
+- Health check `/health` (DB + Redis) con test unitario y e2e; Swagger operativo en `/api/docs`.
+- Artefactos OpenUP: visión, 39 casos de uso, 12 riesgos, planes de iteración, esta matriz.
+- CI GitHub Actions; Husky + commitlint (Conventional Commits).
+
+**Verificación de cierre (ritual OpenUP, 2026-07-04):**
+| Comando | Resultado |
+| --- | --- |
+| `pnpm test` | ✅ 2/2 unitarios (api) + web sin tests aún (Iteración 3) |
+| `pnpm lint` | ✅ 0 errores en los 3 paquetes |
+| `pnpm typecheck` | ✅ TypeScript strict sin errores |
+| `pnpm test:e2e` | ✅ 1/1 (health contra PostgreSQL y Redis reales) |
+
+**Cobertura de principios al cierre:** Adquisición ✅ · Estrategia 🔶 (infraestructura de continuidad base) · Responsabilidad, Desempeño, Conformidad, Comportamiento humano 🔶 (definidos en modelo de datos y casos de uso; se implementan desde Iteración 1).
+
+**Riesgos:** sin cambios frente a `risk-list.md`; R-01 (conectividad) ya mitigado por diseño con Redis AOF en el compose.
+
+**Pendiente que pasa a Iteración 1:** ninguno — alcance completado.
