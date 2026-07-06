@@ -24,6 +24,8 @@
     "@nestjs/common": "^10.4.4",
     "@nestjs/config": "^3.2.3",
     "@nestjs/core": "^10.4.4",
+    "@nestjs/jwt": "^10.2.0",
+    "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.4.4",
     "@nestjs/swagger": "^7.4.2",
     "@prisma/client": "^5.20.0",
@@ -32,6 +34,8 @@
     "class-validator": "^0.14.1",
     "ioredis": "^5.4.1",
     "nestjs-pino": "^4.1.0",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
     "pino": "^9.4.0",
     "pino-http": "^10.3.0",
     "reflect-metadata": "^0.2.2",
@@ -45,6 +49,7 @@
     "@types/express": "^4.17.21",
     "@types/jest": "^29.5.13",
     "@types/node": "^20.16.10",
+    "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^6.0.2",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
@@ -62,13 +67,19 @@
     "typescript": "^5.6.2"
   },
   "jest": {
-    "moduleFileExtensions": ["js", "json", "ts"],
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
-    "collectCoverageFrom": ["**/*.(t|j)s"],
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   }

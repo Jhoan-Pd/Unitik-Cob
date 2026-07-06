@@ -1,5 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Public } from '../../common/decorators/public.decorator';
 import { HealthReport, HealthService } from './health.service';
 
 /**
@@ -12,6 +13,7 @@ import { HealthReport, HealthService } from './health.service';
 export class HealthController {
   constructor(private readonly healthService: HealthService) {}
 
+  @Public()
   @Get()
   @ApiOperation({ summary: 'Estado de salud del sistema y sus dependencias' })
   async check(): Promise<HealthReport> {

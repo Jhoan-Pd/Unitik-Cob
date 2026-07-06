@@ -4,9 +4,9 @@ Las 4 políticas se formalizan aquí como documentos y se implementan como módu
 
 | # | Política | Principios ISO/IEC 38500 | Documento | Módulo |
 | --- | --- | --- | --- | --- |
-| 1 | Gestión de pagos y reconexión | Desempeño + Conformidad | `payment-reconnection.md` (pendiente It. 1) | `payment-reconnection.policy.ts` |
-| 2 | Control de acceso a la red | Responsabilidad + Comportamiento humano | `network-access-control.md` (pendiente It. 1) | `network-access-control.policy.ts` |
-| 3 | Trazabilidad de la información | Conformidad + Responsabilidad | `traceability.md` (pendiente It. 1) | `traceability.policy.ts` |
-| 4 | Continuidad del servicio | Estrategia + Desempeño | `service-continuity.md` (pendiente It. 1) | `service-continuity.policy.ts` |
+| 1 | Gestión de pagos y reconexión | Desempeño + Conformidad | [payment-reconnection.md](payment-reconnection.md) | `payment-reconnection.policy.ts` |
+| 2 | Control de acceso a la red | Responsabilidad + Comportamiento humano | [network-access-control.md](network-access-control.md) | `network-access-control.policy.ts` |
+| 3 | Trazabilidad de la información | Conformidad + Responsabilidad | [traceability.md](traceability.md) | `traceability.policy.ts` |
+| 4 | Continuidad del servicio | Estrategia + Desempeño | [service-continuity.md](service-continuity.md) | `service-continuity.policy.ts` |
 
 Las reglas de cada política están especificadas en el documento maestro del proyecto y resumidas en la [matriz ISO/IEC 38500](../iso-38500-matrix.md).
