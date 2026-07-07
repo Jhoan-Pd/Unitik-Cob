@@ -57,6 +57,10 @@ services:
       API_PORT: 3000
       TZ: America/Bogota
       NODE_ENV: production
+      # AES-256-GCM key for MikroTik credentials (override in .env for real use)
+      DEVICE_SECRET_KEY: ${DEVICE_SECRET_KEY:-0000000000000000000000000000000000000000000000000000000000000000}
+      # RouterBoard real se conecta en Fase 4; mientras tanto, mock
+      MIKROTIK_MOCK: ${MIKROTIK_MOCK:-true}
     ports:
       - "3000:3000"
 

@@ -1,8 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Plan, Subscription, SubscriptionStatus } from '@prisma/client';
 import { SystemConfigService } from '../system-config/system-config.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
+import { SubscriptionChangedEvent } from './events/subscription-changed.event';
 
 export type SubscriptionWithPlan = Subscription & { plan: Plan };
 
@@ -11,6 +13,7 @@ export class SubscriptionsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly systemConfig: SystemConfigService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -44,6 +47,12 @@ export class SubscriptionsService {
         include: { plan: true },
       }),
     ]);
+
+    // Plan change → PPPoE profile change on the RouterBoard (queued, It. 5)
+    this.eventEmitter.emit(
+      SubscriptionChangedEvent.EVENT_NAME,
+      new SubscriptionChangedEvent(dto.clientId, subscription.id, subscription.plan.name),
+    );
     return subscription;
   }
 

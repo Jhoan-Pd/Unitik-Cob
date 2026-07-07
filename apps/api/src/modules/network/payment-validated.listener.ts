@@ -5,9 +5,9 @@ import { Queue } from 'bullmq';
 import { ServiceContinuityPolicy } from '../governance/service-continuity.policy';
 import { PaymentReconnectionPolicy } from '../governance/payment-reconnection.policy';
 import { PrismaService } from '../../prisma/prisma.service';
-import { RECONNECTION_QUEUE } from '../../queues/queues.module';
+import { NETWORK_ACTIONS_QUEUE } from '../../queues/queues.module';
 import { PaymentValidatedEvent } from '../payments/events/payment-validated.event';
-import { ReconnectionJobData } from './reconnection.processor';
+import { ReconnectionJobData } from './network-actions.processor';
 
 /**
  * Bridges Policy 1 (payment → reconnection) with Policy 4 (continuity):
@@ -19,7 +19,7 @@ export class PaymentValidatedListener {
   private readonly logger = new Logger(PaymentValidatedListener.name);
 
   constructor(
-    @InjectQueue(RECONNECTION_QUEUE) private readonly reconnectionQueue: Queue,
+    @InjectQueue(NETWORK_ACTIONS_QUEUE) private readonly networkQueue: Queue,
     private readonly prisma: PrismaService,
     private readonly continuityPolicy: ServiceContinuityPolicy,
   ) {}
@@ -43,7 +43,7 @@ export class PaymentValidatedListener {
       validatedAt: event.validatedAt.toISOString(),
     };
 
-    await this.reconnectionQueue.add('reconnect', data, {
+    await this.networkQueue.add('reconnect', data, {
       ...this.continuityPolicy.criticalJobOptions(),
       jobId: `reconnect-${event.paymentId}`, // idempotent per payment (BullMQ forbids ':' in ids)
     });

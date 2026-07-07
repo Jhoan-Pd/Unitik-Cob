@@ -24,6 +24,15 @@ Leyenda: ✅ cubierto · 🔶 parcial/en diseño · ⬜ pendiente
 
 ## Historial por iteración
 
+### Iteración 5 (Fase Construcción) — CERRADA 2026-07-07
+**Entregado:** integración MikroTik — driver node-routeros tras la interfaz de 7 métodos (mock conmutable `MIKROTIK_MOCK`), CRUD de dispositivos con AES-256-GCM y estado online/offline, rate limiting 20 acciones/min, cola unificada `network-actions` (reconnect/suspend/change-profile), suspensión automática diaria por mora con gracia configurable (promesas protegidas), cambio de plan → perfil PPPoE.
+**Verificación de cierre:** `pnpm test` 70/70 + 2/2 web · lint 0 · typecheck limpio · e2e 22/22 (6 suites).
+**Avance de principios:**
+- **Responsabilidad ✅**: solo ADMIN/TECHNICIAN operan la red; toda acción con `policyRef`, IP y user-agent.
+- **Comportamiento humano ✅ base**: rate limiting activo; suspensiones siempre con motivo trazable; promesas de pago protegen al cliente de suspensión.
+- **Estrategia/Desempeño ✅ base**: el ciclo completo pago→reconexión y mora→suspensión corre sin intervención humana, encolado y con reintentos.
+**Riesgos:** R-02 reducido a conmutación de flag (driver real listo); R-05 mitigado (AES-256-GCM + secretos fuera de API y auditoría).
+
 ### Iteración 4 (Fase Construcción) — CERRADA 2026-07-07
 **Entregado:** motor de facturación completo — generación mensual (cron día 1), interés por mora e histórico de doble mensualidad (crons diarios, todo desde `system_config`), descuentos ADMIN con motivo, promesas de pago 7/15 días con expiración automática, webhook Wompi con firma SHA-256 como única vía de auto-validación, factura electrónica DIAN encolada (mock, R-08), cartera y morosidad.
 **Verificación de cierre:** `pnpm test` 58/58 + 2/2 web · lint 0 · typecheck limpio · e2e 19/19 (5 suites en serie).

@@ -1,4 +1,5 @@
 import { NotFoundException } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { SubscriptionStatus } from '@prisma/client';
 import { SystemConfigService } from '../system-config/system-config.service';
@@ -20,6 +21,7 @@ describe('SubscriptionsService', () => {
     $transaction: jest.fn(),
   };
   const configMock = { getNumber: jest.fn().mockResolvedValue(10) };
+  const emitterMock = { emit: jest.fn() };
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -27,6 +29,7 @@ describe('SubscriptionsService', () => {
         SubscriptionsService,
         { provide: PrismaService, useValue: prismaMock },
         { provide: SystemConfigService, useValue: configMock },
+        { provide: EventEmitter2, useValue: emitterMock },
       ],
     }).compile();
     service = moduleRef.get(SubscriptionsService);
@@ -37,12 +40,22 @@ describe('SubscriptionsService', () => {
   it('closes the previous ACTIVE subscription and creates the new one in a tx', async () => {
     prismaMock.client.findUnique.mockResolvedValueOnce({ id: 'client-1' });
     prismaMock.plan.findUnique.mockResolvedValueOnce({ id: 'plan-2', isActive: true });
-    const created = { id: 'sub-2', clientId: 'client-1', planId: 'plan-2', plan: {} };
+    const created = {
+      id: 'sub-2',
+      clientId: 'client-1',
+      planId: 'plan-2',
+      plan: { name: 'Plan 2 Fibra' },
+    };
     prismaMock.$transaction.mockResolvedValueOnce([{ count: 1 }, created]);
 
     const subscription = await service.create({ clientId: 'client-1', planId: 'plan-2' });
 
     expect(subscription.id).toBe('sub-2');
+    // Plan change propagates to the RouterBoard via event → queue (It. 5)
+    expect(emitterMock.emit).toHaveBeenCalledWith(
+      'subscription.changed',
+      expect.objectContaining({ clientId: 'client-1', planName: 'Plan 2 Fibra' }),
+    );
     // First tx operation cancels any ACTIVE subscription of the client
     expect(prismaMock.subscription.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({

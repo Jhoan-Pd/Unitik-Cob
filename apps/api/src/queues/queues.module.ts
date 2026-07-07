@@ -3,7 +3,7 @@ import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 /** Queue names — critical operations only travel through these (golden rule #4). */
-export const RECONNECTION_QUEUE = 'reconnection';
+export const NETWORK_ACTIONS_QUEUE = 'network-actions'; // reconnect | suspend | change-profile
 export const ELECTRONIC_INVOICE_QUEUE = 'electronic-invoice';
 
 /**
