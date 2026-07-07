@@ -1,6 +1,8 @@
 # Plan de Iteración 3 — Fase de Construcción (OpenUP)
 
-**Duración:** 4 semanas · **Estado: en curso**
+**Duración:** 4 semanas · **Estado: ✅ CERRADA (2026-07-06)**
+
+**Verificación de cierre:** `pnpm test` 46/46 (api) + 2/2 (web) · `pnpm lint` 0 errores · `pnpm typecheck` limpio · `pnpm test:e2e` 13/13.
 
 ## Objetivos
 

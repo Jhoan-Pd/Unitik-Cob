@@ -24,6 +24,12 @@ Leyenda: ✅ cubierto · 🔶 parcial/en diseño · ⬜ pendiente
 
 ## Historial por iteración
 
+### Iteración 3 (Fase Construcción) — CERRADA 2026-07-06
+**Entregado:** módulos `clients` (validaciones colombianas, GPS, estados con motivo auditados), `plans` (defaults desde `system_config`), `subscriptions` (única activa por cliente, tx), `invoices` lectura, y portal cliente React (login por cédula, mi plan, mis facturas, rutas por rol, refresh automático).
+**Verificación de cierre:** `pnpm test` 46/46 + 2/2 web · lint 0 · typecheck limpio · e2e 13/13.
+**Avance de principios:** Responsabilidad ✅ sostenido (nuevos módulos con RBAC + auditoría old/new); Comportamiento humano 🔶→ avanzado (portal 100 % español, login con cédula, motivos obligatorios en suspensiones); Conformidad sostenida (STATUS_CHANGE con motivo en `audit_log`).
+**Riesgos:** R-06 (migración WhispHub) sigue abierto — el CRUD de clientes ya permite el script de importación; R-07 mitigado parcialmente (UI simple en español).
+
 ### Iteración 2 (Fase Elaboración) — CERRADA 2026-07-06 · **Fase 2 completada**
 **Entregado:**
 - Prototipo arquitectónico ejecutable del flujo crítico: pago registrado → validación manual (Política 1: solo ADMIN/CASHIER, comprobante obligatorio para Nequi/transferencia, rechazo con motivo + notificación) → evento `payment.validated` → job BullMQ idempotente → reconexión en RouterBoard (mock) → auditoría `RECONNECT` → métrica `RECONNECTION_TIME_MINUTES`.
