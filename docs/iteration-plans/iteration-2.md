@@ -1,6 +1,8 @@
 # Plan de Iteración 2 — Fase de Elaboración (OpenUP)
 
-**Duración:** 4 semanas · **Estado: en curso**
+**Duración:** 4 semanas · **Estado: ✅ CERRADA (2026-07-06) — cierra la Fase de Elaboración**
+
+**Verificación de cierre:** `pnpm test` 38/38 · `pnpm lint` 0 errores · `pnpm typecheck` limpio · `pnpm test:e2e` 8/8 (incluye prototipo end-to-end con reconexión en 0,01 min, SLA < 5).
 
 ## Objetivos
 

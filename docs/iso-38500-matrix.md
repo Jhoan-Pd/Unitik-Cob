@@ -24,6 +24,24 @@ Leyenda: ✅ cubierto · 🔶 parcial/en diseño · ⬜ pendiente
 
 ## Historial por iteración
 
+### Iteración 2 (Fase Elaboración) — CERRADA 2026-07-06 · **Fase 2 completada**
+**Entregado:**
+- Prototipo arquitectónico ejecutable del flujo crítico: pago registrado → validación manual (Política 1: solo ADMIN/CASHIER, comprobante obligatorio para Nequi/transferencia, rechazo con motivo + notificación) → evento `payment.validated` → job BullMQ idempotente → reconexión en RouterBoard (mock) → auditoría `RECONNECT` → métrica `RECONNECTION_TIME_MINUTES`.
+- `QueuesModule` (Redis AOF) y worker con backoff de la política de continuidad (1/5/15/30/60 min).
+- `MikrotikService` con los 7 métodos obligatorios en modo MOCK (misma interfaz que usará `node-routeros` en It. 5).
+- `docs/architecture.md` reescrito desde el prototipo real (componentes, secuencia, despliegue, 6 ADRs).
+
+**Verificación de cierre (2026-07-06):** `pnpm test` 38/38 · `pnpm lint` 0 · `pnpm typecheck` limpio · `pnpm test:e2e` 8/8. Reconexión medida: 0,01 min (SLA < 5 min).
+
+**Avance de principios:**
+- **Estrategia**: 🔶→✅ base — continuidad operando con colas persistentes y reintentos reales (falta RouterBoard física, Fase 4).
+- **Desempeño**: 🔶 avanzado — SLA instrumentado con métrica automática; validación definitiva en Fase 4.
+- **Conformidad/Responsabilidad**: sostenidos — todo el flujo nuevo quedó auditado (VALIDATION con old/new, RECONNECT con policyRef).
+
+**Riesgos:** R-01 mitigado por diseño y probado (job reintenta ante fallo de MikroTik); R-02 acotado (interfaz final congelada, solo falta transporte).
+
+**Hito OpenUP:** arquitectura estable demostrada por ejecución → inicia Fase 3 (Construcción).
+
 ### Iteración 1 (Fase Elaboración) — CERRADA 2026-07-06
 **Entregado:**
 - Módulo `auth` (JWT + Passport, refresh con secreto separado, login por correo/cédula) con auditoría de `LOGIN`, `LOGIN_FAILED` y `TOKEN_REFRESH` (IP + user-agent).

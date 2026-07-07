@@ -69,8 +69,8 @@ Toda operación crítica queda registrada en `audit_log` (append-only) con usuar
 | Fase | Iteraciones | Estado |
 | --- | --- | --- |
 | 1. Inicio | 0 | ✅ Cerrada (2026-07-04) |
-| 2. Elaboración | 1–2 | 🔄 En curso — It. 1 cerrada (2026-07-06) |
-| 3. Construcción | 3–6 | Pendiente |
+| 2. Elaboración | 1–2 | ✅ Cerrada (2026-07-06) — arquitectura validada por prototipo |
+| 3. Construcción | 3–6 | 🔄 En curso — Iteración 3 |
 | 4. Transición | 7–8 | Pendiente |
 
 Artefactos: [visión](docs/vision.md) · [casos de uso](docs/use-cases.md) · [riesgos](docs/risk-list.md) · [matriz ISO/IEC 38500](docs/iso-38500-matrix.md) · [planes de iteración](docs/iteration-plans/)
