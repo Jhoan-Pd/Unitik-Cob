@@ -7,10 +7,14 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { ClientsModule } from './modules/clients/clients.module';
 import { GovernanceModule } from './modules/governance/governance.module';
 import { HealthModule } from './modules/health/health.module';
+import { InvoicesModule } from './modules/invoices/invoices.module';
 import { NetworkModule } from './modules/network/network.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { PlansModule } from './modules/plans/plans.module';
+import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { SystemConfigModule } from './modules/system-config/system-config.module';
 import { UsersModule } from './modules/users/users.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -36,6 +40,10 @@ import { QueuesModule } from './queues/queues.module';
     SystemConfigModule,
     AuthModule,
     UsersModule,
+    ClientsModule,
+    PlansModule,
+    SubscriptionsModule,
+    InvoicesModule,
     NetworkModule,
     PaymentsModule,
     HealthModule,
