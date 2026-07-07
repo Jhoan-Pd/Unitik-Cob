@@ -24,6 +24,27 @@ Leyenda: ✅ cubierto · 🔶 parcial/en diseño · ⬜ pendiente
 
 ## Historial por iteración
 
+### Iteración 1 (Fase Elaboración) — CERRADA 2026-07-06
+**Entregado:**
+- Módulo `auth` (JWT + Passport, refresh con secreto separado, login por correo/cédula) con auditoría de `LOGIN`, `LOGIN_FAILED` y `TOKEN_REFRESH` (IP + user-agent).
+- Módulo `users` con RBAC de 4 roles; sin borrado físico (desactivación) para preservar historia de auditoría.
+- Guards globales `JwtAuthGuard`/`RolesGuard`; módulo `governance` con las 4 políticas inyectables y testeadas.
+- `AuditModule`: interceptor global `@Audited` — registra usuario, IP, user-agent, `oldValues`/`newValues` y `policyRef`, sanitiza secretos y completa la escritura **antes** de responder; servicio append-only.
+- Módulo `system-config` auditado con valor anterior/nuevo (regla de oro #3).
+- Documentos formales de las 4 políticas en `docs/policies/`.
+
+**Verificación de cierre (2026-07-06):** `pnpm test` 28/28 · `pnpm lint` 0 errores · `pnpm typecheck` limpio · `pnpm test:e2e` 6/6.
+
+**Avance de principios:**
+- **Responsabilidad**: 🔶→✅ para los módulos existentes — RBAC operativo, toda mutación con autor identificado.
+- **Conformidad**: 🔶 avanzado — trazabilidad automática con old/new values funcionando (e2e verificado); falta cubrir módulos de dominio (It. 3–6).
+- **Comportamiento humano**: 🔶 — mensajes de validación en español, login por cédula para clientes.
+- **Estrategia / Desempeño**: sin cambio (la política de continuidad se ejercita en It. 2 con BullMQ).
+
+**Riesgos:** R-05 mitigado parcialmente (RBAC + auditoría con IP); resto sin cambios.
+
+**Pasa a Iteración 2:** prototipo arquitectónico pago→validación→reconexión simulada y documento de arquitectura.
+
 ### Iteración 0 (Fase Inicio) — CERRADA 2026-07-04
 **Entregado:**
 - Monorepo pnpm (apps/api NestJS, apps/web React+Vite, packages/shared-types), schema Prisma completo (15 modelos, 14 enums, incluye `AuditLog`, `SystemConfig`, `OperationalMetric`) con migración `init` aplicable en frío.

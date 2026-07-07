@@ -1,6 +1,8 @@
 # Plan de Iteración 1 — Fase de Elaboración (OpenUP)
 
-**Duración:** 4 semanas · **Inicio:** julio 2026 · **Estado: en curso**
+**Duración:** 4 semanas · **Inicio:** julio 2026 · **Estado: ✅ CERRADA (2026-07-06)**
+
+**Verificación de cierre:** `pnpm test` 28/28 · `pnpm lint` 0 errores · `pnpm typecheck` limpio · `pnpm test:e2e` 6/6 contra PostgreSQL/Redis reales.
 
 ## Objetivos
 

@@ -69,7 +69,7 @@ Toda operación crítica queda registrada en `audit_log` (append-only) con usuar
 | Fase | Iteraciones | Estado |
 | --- | --- | --- |
 | 1. Inicio | 0 | ✅ Cerrada (2026-07-04) |
-| 2. Elaboración | 1–2 | 🔄 Siguiente |
+| 2. Elaboración | 1–2 | 🔄 En curso — It. 1 cerrada (2026-07-06) |
 | 3. Construcción | 3–6 | Pendiente |
 | 4. Transición | 7–8 | Pendiente |
 
