@@ -39,6 +39,9 @@ describe('Clientes, planes y portal (e2e)', () => {
 
   afterAll(async () => {
     try {
+      // Other suites may have generated invoices for this fixture's subscription
+      await prisma.payment.deleteMany({ where: { invoice: { clientId } } });
+      await prisma.invoice.deleteMany({ where: { clientId } });
       await prisma.subscription.deleteMany({ where: { clientId } });
       await prisma.client.deleteMany({ where: { id: clientId } });
       await prisma.user.deleteMany({ where: { id: clientUserId } });

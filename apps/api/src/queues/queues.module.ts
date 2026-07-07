@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 /** Queue names — critical operations only travel through these (golden rule #4). */
 export const RECONNECTION_QUEUE = 'reconnection';
+export const ELECTRONIC_INVOICE_QUEUE = 'electronic-invoice';
 
 /**
  * BullMQ root connection (Service continuity policy — ISO/IEC 38500

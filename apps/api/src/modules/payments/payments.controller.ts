@@ -1,19 +1,47 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  ForbiddenException,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Req,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Payment, Role } from '@prisma/client';
 import { Request } from 'express';
 import { Audited } from '../../common/decorators/audited.decorator';
 import { AuthenticatedUser, CurrentUser } from '../../common/decorators/current-user.decorator';
+import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RegisterPaymentDto } from './dto/register-payment.dto';
 import { ValidatePaymentDto } from './dto/validate-payment.dto';
 import { PaymentsService } from './payments.service';
+import { WompiEvent, WompiService } from './wompi.service';
 
 @ApiTags('payments')
 @ApiBearerAuth()
 @Controller('payments')
 export class PaymentsController {
-  constructor(private readonly paymentsService: PaymentsService) {}
+  constructor(
+    private readonly paymentsService: PaymentsService,
+    private readonly wompiService: WompiService,
+  ) {}
+
+  @Public()
+  @Post('webhook/wompi')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Webhook de Wompi (firma verificada; única vía de auto-validación)' })
+  async wompiWebhook(@Body() event: WompiEvent): Promise<{ processed: boolean }> {
+    if (!this.wompiService.verifySignature(event)) {
+      throw new ForbiddenException('Firma del evento inválida');
+    }
+    return this.paymentsService.processWompiEvent(event);
+  }
 
   @Post()
   @Roles(Role.ADMIN, Role.CASHIER, Role.CLIENT)

@@ -24,6 +24,16 @@ Leyenda: ✅ cubierto · 🔶 parcial/en diseño · ⬜ pendiente
 
 ## Historial por iteración
 
+### Iteración 4 (Fase Construcción) — CERRADA 2026-07-07
+**Entregado:** motor de facturación completo — generación mensual (cron día 1), interés por mora e histórico de doble mensualidad (crons diarios, todo desde `system_config`), descuentos ADMIN con motivo, promesas de pago 7/15 días con expiración automática, webhook Wompi con firma SHA-256 como única vía de auto-validación, factura electrónica DIAN encolada (mock, R-08), cartera y morosidad.
+**Verificación de cierre:** `pnpm test` 58/58 + 2/2 web · lint 0 · typecheck limpio · e2e 19/19 (5 suites en serie).
+**Avance de principios:**
+- **Conformidad ✅ consolidada**: cada regla comercial (mora, doble cobro, descuento, promesa rota, auto-validación) deja rastro con acción propia en `audit_log`; firmas Wompi verificadas protegen contra comprobantes falsos digitales (R-03).
+- **Desempeño**: facturación sin intervención manual; validación automática elimina el reproceso administrativo del flujo Nequi/PSE.
+- **Estrategia**: DIAN por cola con reintentos — la facturación local nunca depende del proveedor externo (R-08 mitigado por diseño).
+- **Comportamiento humano**: promesas formales (7/15 días) sustituyen acuerdos verbales; rechazo de comprobante siempre notificado con motivo.
+**Riesgos:** R-03 mitigado (doble vía verificable); R-08 acotado al mock; nota operativa: las suites e2e corren en serie porque comparten la BD.
+
 ### Iteración 3 (Fase Construcción) — CERRADA 2026-07-06
 **Entregado:** módulos `clients` (validaciones colombianas, GPS, estados con motivo auditados), `plans` (defaults desde `system_config`), `subscriptions` (única activa por cliente, tx), `invoices` lectura, y portal cliente React (login por cédula, mi plan, mis facturas, rutas por rol, refresh automático).
 **Verificación de cierre:** `pnpm test` 46/46 + 2/2 web · lint 0 · typecheck limpio · e2e 13/13.

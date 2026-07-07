@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
 import { LoggerModule } from 'nestjs-pino';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
@@ -14,6 +15,7 @@ import { InvoicesModule } from './modules/invoices/invoices.module';
 import { NetworkModule } from './modules/network/network.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { PlansModule } from './modules/plans/plans.module';
+import { PromisesModule } from './modules/promises/promises.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { SystemConfigModule } from './modules/system-config/system-config.module';
 import { UsersModule } from './modules/users/users.module';
@@ -33,6 +35,7 @@ import { QueuesModule } from './queues/queues.module';
       },
     }),
     EventEmitterModule.forRoot(),
+    ScheduleModule.forRoot(),
     PrismaModule,
     GovernanceModule, // 4 políticas ISO/IEC 38500 (global)
     AuditModule, // interceptor global de trazabilidad
@@ -44,6 +47,7 @@ import { QueuesModule } from './queues/queues.module';
     PlansModule,
     SubscriptionsModule,
     InvoicesModule,
+    PromisesModule,
     NetworkModule,
     PaymentsModule,
     HealthModule,

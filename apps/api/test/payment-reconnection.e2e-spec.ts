@@ -117,11 +117,11 @@ describe('Prototipo: pago validado → reconexión encolada (e2e)', () => {
   afterAll(async () => {
     // Cleanup fixture (audit/metric rows are append-only evidence: they stay)
     try {
-      await prisma.payment.deleteMany({ where: { invoiceId: fixture.invoiceId } });
+      await prisma.payment.deleteMany({ where: { invoice: { clientId: fixture.clientId } } });
       await prisma.networkAccess.deleteMany({ where: { id: fixture.networkAccessId } });
       await prisma.networkDevice.deleteMany({ where: { id: fixture.deviceId } });
-      await prisma.invoice.deleteMany({ where: { id: fixture.invoiceId } });
-      await prisma.subscription.deleteMany({ where: { id: fixture.subscriptionId } });
+      await prisma.invoice.deleteMany({ where: { clientId: fixture.clientId } });
+      await prisma.subscription.deleteMany({ where: { clientId: fixture.clientId } });
       await prisma.notification.deleteMany({ where: { clientId: fixture.clientId } });
       await prisma.client.deleteMany({ where: { id: fixture.clientId } });
       await prisma.user.deleteMany({ where: { id: fixture.userId } });

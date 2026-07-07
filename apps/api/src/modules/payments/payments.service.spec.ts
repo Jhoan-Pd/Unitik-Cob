@@ -2,16 +2,20 @@ import { BadRequestException, ConflictException, ForbiddenException } from '@nes
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { InvoiceStatus, PaymentMethod, PaymentStatus, Role } from '@prisma/client';
+import { AuditService } from '../audit/audit.service';
 import { PaymentReconnectionPolicy } from '../governance/payment-reconnection.policy';
+import { PromisesService } from '../promises/promises.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PaymentsService } from './payments.service';
 
 describe('PaymentsService (Policy 1 prototype)', () => {
   let service: PaymentsService;
   const emitterMock = { emit: jest.fn() };
+  const promisesMock = { markFulfilled: jest.fn() };
+  const auditMock = { record: jest.fn() };
   const prismaMock = {
     invoice: { findUnique: jest.fn(), update: jest.fn() },
-    payment: { create: jest.fn(), findUnique: jest.fn(), update: jest.fn() },
+    payment: { create: jest.fn(), findUnique: jest.fn(), update: jest.fn(), findFirst: jest.fn() },
     notification: { create: jest.fn() },
     $transaction: jest.fn(),
   };
@@ -42,6 +46,8 @@ describe('PaymentsService (Policy 1 prototype)', () => {
         PaymentReconnectionPolicy,
         { provide: PrismaService, useValue: prismaMock },
         { provide: EventEmitter2, useValue: emitterMock },
+        { provide: PromisesService, useValue: promisesMock },
+        { provide: AuditService, useValue: auditMock },
       ],
     }).compile();
     service = moduleRef.get(PaymentsService);

@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -10,14 +11,18 @@ import {
   InvoiceStatus,
   NotificationChannel,
   Payment,
+  PaymentMethod,
   PaymentStatus,
 } from '@prisma/client';
 import { AuthenticatedUser } from '../../common/decorators/current-user.decorator';
+import { AuditService } from '../audit/audit.service';
 import { PaymentReconnectionPolicy } from '../governance/payment-reconnection.policy';
+import { PromisesService } from '../promises/promises.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RegisterPaymentDto } from './dto/register-payment.dto';
 import { ValidatePaymentDto } from './dto/validate-payment.dto';
 import { PaymentValidatedEvent } from './events/payment-validated.event';
+import { WompiEvent } from './wompi.service';
 
 /**
  * Payment registration and validation (Policy 1 — ISO/IEC 38500
@@ -27,10 +32,14 @@ import { PaymentValidatedEvent } from './events/payment-validated.event';
  */
 @Injectable()
 export class PaymentsService {
+  private readonly logger = new Logger(PaymentsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly policy: PaymentReconnectionPolicy,
     private readonly eventEmitter: EventEmitter2,
+    private readonly promisesService: PromisesService,
+    private readonly auditService: AuditService,
   ) {}
 
   /** Registers a payment. Nequi/transfer always start PENDING_VALIDATION. */
@@ -114,12 +123,14 @@ export class PaymentsService {
         where: { id: paymentId },
         data: { status: PaymentStatus.VALIDATED, validatedBy: user.id, validatedAt },
       }),
-      // Prototype simplification: full covering-amount logic lands in It. 4
       this.prisma.invoice.update({
         where: { id: payment.invoiceId },
         data: { status: InvoiceStatus.PAID },
       }),
     ]);
+
+    // A validated payment fulfills any open promise on the invoice
+    await this.promisesService.markFulfilled(payment.invoiceId);
 
     this.eventEmitter.emit(
       PaymentReconnectionPolicy.PAYMENT_VALIDATED_EVENT,
@@ -132,5 +143,69 @@ export class PaymentsService {
     );
 
     return { payment: validated, previous: payment };
+  }
+
+  /**
+   * Wompi webhook (already signature-verified by the controller): the only
+   * auto-validated path (Policy 1, rule 2). Idempotent per transaction id.
+   */
+  async processWompiEvent(event: WompiEvent): Promise<{ processed: boolean; reason?: string }> {
+    const transaction = event.data.transaction;
+    if (event.event !== 'transaction.updated' || transaction.status !== 'APPROVED') {
+      return { processed: false, reason: `Evento ignorado (${transaction.status})` };
+    }
+
+    const invoice = await this.prisma.invoice.findUnique({
+      where: { invoiceNumber: transaction.reference },
+    });
+    if (!invoice) {
+      this.logger.warn(`Webhook Wompi con referencia desconocida: ${transaction.reference}`);
+      return { processed: false, reason: 'Referencia desconocida' };
+    }
+
+    const duplicate = await this.prisma.payment.findFirst({
+      where: { reference: transaction.id },
+    });
+    if (duplicate) return { processed: false, reason: 'Transacción ya procesada' };
+
+    const validatedAt = new Date();
+    const [payment] = await this.prisma.$transaction([
+      this.prisma.payment.create({
+        data: {
+          invoiceId: invoice.id,
+          amount: transaction.amount_in_cents / 100,
+          paymentMethod: PaymentMethod.ONLINE_GATEWAY,
+          reference: transaction.id,
+          status: PaymentStatus.VALIDATED,
+          autoValidated: true,
+          validatedAt,
+          paidAt: validatedAt,
+        },
+      }),
+      this.prisma.invoice.update({
+        where: { id: invoice.id },
+        data: { status: InvoiceStatus.PAID },
+      }),
+    ]);
+
+    await this.promisesService.markFulfilled(invoice.id);
+    await this.auditService.record({
+      action: 'AUTO_VALIDATION',
+      entity: 'Payment',
+      entityId: payment.id,
+      newValues: {
+        gateway: 'WOMPI',
+        transactionId: transaction.id,
+        invoiceNumber: invoice.invoiceNumber,
+        amount: transaction.amount_in_cents / 100,
+      },
+      policyRef: PaymentReconnectionPolicy.POLICY_REF,
+    });
+
+    this.eventEmitter.emit(
+      PaymentReconnectionPolicy.PAYMENT_VALIDATED_EVENT,
+      new PaymentValidatedEvent(payment.id, invoice.id, invoice.clientId, validatedAt),
+    );
+    return { processed: true };
   }
 }
