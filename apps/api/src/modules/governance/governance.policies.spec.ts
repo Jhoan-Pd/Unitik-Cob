@@ -80,8 +80,15 @@ describe('Governance policies (ISO/IEC 38500)', () => {
     it('critical jobs keep history for traceability', () => {
       const options = policy.criticalJobOptions();
       expect(options.attempts).toBe(5);
+      expect(options.backoff.type).toBe('custom');
       expect(options.removeOnComplete).toBe(false);
       expect(options.removeOnFail).toBe(false);
+    });
+
+    it('backoff strategy maps attempts to the policy delays (clamped)', () => {
+      expect(policy.backoffDelayForAttempt(1)).toBe(60_000);
+      expect(policy.backoffDelayForAttempt(3)).toBe(900_000);
+      expect(policy.backoffDelayForAttempt(99)).toBe(3_600_000);
     });
 
     it('daily backup runs at 02:00 America/Bogota', () => {

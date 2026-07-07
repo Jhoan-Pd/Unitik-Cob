@@ -25,21 +25,29 @@ export class ServiceContinuityPolicy {
   }
 
   /**
-   * BullMQ job options implementing this policy. Uses a custom backoff
-   * strategy name resolved by the queue module (Iteration 5).
+   * BullMQ job options implementing this policy. The 'custom' backoff type
+   * is resolved by the worker's backoffStrategy (see ReconnectionProcessor),
+   * which reads retryDelaysMs() — single source of truth.
    */
   criticalJobOptions(): {
     attempts: number;
-    backoff: { type: string };
+    backoff: { type: 'custom' };
     removeOnComplete: boolean;
     removeOnFail: boolean;
   } {
     return {
       attempts: this.maxAttempts(),
-      backoff: { type: 'governance-continuity' },
+      backoff: { type: 'custom' },
       removeOnComplete: false, // keep history for traceability
       removeOnFail: false,
     };
+  }
+
+  /** Worker-side backoff strategy: attempt N waits retryDelaysMs()[N-1]. */
+  backoffDelayForAttempt(attemptsMade: number): number {
+    const delays = this.retryDelaysMs();
+    const index = Math.min(Math.max(attemptsMade, 1), delays.length) - 1;
+    return delays[index];
   }
 
   /** Hour (America/Bogota) of the automated daily database backup. */

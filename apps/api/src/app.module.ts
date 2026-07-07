@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { LoggerModule } from 'nestjs-pino';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
@@ -8,9 +9,12 @@ import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { GovernanceModule } from './modules/governance/governance.module';
 import { HealthModule } from './modules/health/health.module';
+import { NetworkModule } from './modules/network/network.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 import { SystemConfigModule } from './modules/system-config/system-config.module';
 import { UsersModule } from './modules/users/users.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { QueuesModule } from './queues/queues.module';
 
 @Module({
   imports: [
@@ -24,12 +28,16 @@ import { PrismaModule } from './prisma/prisma.module';
             : undefined,
       },
     }),
+    EventEmitterModule.forRoot(),
     PrismaModule,
     GovernanceModule, // 4 políticas ISO/IEC 38500 (global)
     AuditModule, // interceptor global de trazabilidad
+    QueuesModule, // BullMQ (política de continuidad)
     SystemConfigModule,
     AuthModule,
     UsersModule,
+    NetworkModule,
+    PaymentsModule,
     HealthModule,
   ],
   providers: [
