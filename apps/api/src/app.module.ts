@@ -8,10 +8,16 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { CashierModule } from './modules/cashier/cashier.module';
 import { ClientsModule } from './modules/clients/clients.module';
 import { GovernanceModule } from './modules/governance/governance.module';
 import { HealthModule } from './modules/health/health.module';
+import { InstallationsModule } from './modules/installations/installations.module';
 import { InvoicesModule } from './modules/invoices/invoices.module';
+import { MetricsModule } from './modules/metrics/metrics.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ReportsModule } from './modules/reports/reports.module';
+import { TicketsModule } from './modules/tickets/tickets.module';
 import { NetworkModule } from './modules/network/network.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { PlansModule } from './modules/plans/plans.module';
@@ -50,6 +56,12 @@ import { QueuesModule } from './queues/queues.module';
     PromisesModule,
     NetworkModule,
     PaymentsModule,
+    TicketsModule,
+    CashierModule,
+    InstallationsModule,
+    NotificationsModule,
+    ReportsModule,
+    MetricsModule,
     HealthModule,
   ],
   providers: [
