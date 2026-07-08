@@ -1,6 +1,6 @@
 # Plan de Iteración 6 — Fase de Construcción (OpenUP)
 
-**Duración:** 4 semanas · **Estado: en curso (parte 1 entregada)**
+**Duración:** 4 semanas · **Estado: partes 1 y 2 entregadas — lista para cierre**
 
 ## Objetivos
 
@@ -17,15 +17,17 @@ Cerrar la Fase de Construcción: operación diaria completa (tickets, caja, acta
 - [x] Módulo `notifications`: bandeja in-app (`/notifications/my` + marcar leída), despacho cada 5 min con canales en modo MOCK (proveedores reales de WhatsApp/SMS/email se contratan en Fase 4 — R-09)
 - [x] Tests: 78 unitarios + 27 e2e (7 suites)
 
-## Parte 2 — pendiente para cerrar la iteración
+## Parte 2 — entregada (2026-07-08)
 
-- [ ] Notificaciones in-app en tiempo real con WebSockets (Socket.io) para el panel admin
-- [ ] Reportes exportables adicionales: recaudo y clientes por plan (CSV); evaluación de `exceljs`/`pdfkit` para Excel/PDF nativos
-- [ ] Paneles frontend: admin (dashboard, cartera, auditoría), técnico (tickets, actas), cajero (caja) — hoy solo existe el portal cliente y el placeholder de staff
-- [ ] Recordatorios automáticos de vencimiento y promesa (`OVERDUE_REMINDER`, `PROMISE_REMINDER`) generados por cron
+- [x] **WebSockets (Socket.io)**: gateway `/ws` con autenticación JWT en el handshake, salas por rol; `payment.validated` se difunde al staff en tiempo real (los sockets sin token se desconectan)
+- [x] Reportes CSV: **recaudo** por período (con totales y bandera de auto-validación) y **clientes por plan** con ingreso mensual estimado — compatibles con Excel; PDF nativo se evalúa en Fase 4
+- [x] **Panel ADMIN** (React): tarjetas KPI, cartera con ranking de morosos, tabla de auditoría con exportación CSV autenticada, y feed de eventos en vivo por WebSocket
+- [x] **Panel CAJERO**: búsqueda de cliente → estado de cuenta → recibir efectivo (recibo en pantalla) → cierre de caja del día
+- [x] **Panel TÉCNICO**: tickets asignados con avance de estado (Abierto → En progreso → Resuelto → Cerrado)
+- [x] Recordatorios cron (08:00): `OVERDUE_REMINDER` (in-app + WhatsApp mock, uno por cliente/día) y `PROMISE_REMINDER` (promesas que vencen en 24 h)
 
-## Criterios de salida (al cierre)
+## Criterios de salida
 
-1. e2e cubre: efectivo → recibo → reconexión; ticket → cierre; auditoría exportada; KPIs y métricas. ✅ (parte 1)
-2. Frontend de los 3 paneles staff operativo con los flujos críticos. ⬜
-3. Todo verde: test, lint, typecheck, e2e. ✅ (parte 1)
+1. e2e cubre: efectivo → recibo → reconexión; ticket → cierre; auditoría exportada; KPIs y métricas. ✅
+2. Frontend de los 3 paneles staff operativo con los flujos críticos. ✅
+3. Todo verde: `pnpm test` 78/78 + 2/2 web · lint 0 · typecheck limpio · e2e 27/27 (7 suites). ✅

@@ -2,8 +2,8 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
-import PanelPlaceholderPage from './pages/PanelPlaceholderPage';
 import PortalPage from './pages/client/PortalPage';
+import StaffRouter from './pages/staff/StaffRouter';
 
 export default function App() {
   return (
@@ -16,7 +16,7 @@ export default function App() {
       </Route>
 
       <Route element={<ProtectedRoute roles={['ADMIN', 'TECHNICIAN', 'CASHIER']} />}>
-        <Route path="/panel" element={<PanelPlaceholderPage />} />
+        <Route path="/panel" element={<StaffRouter />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/login" replace />} />
