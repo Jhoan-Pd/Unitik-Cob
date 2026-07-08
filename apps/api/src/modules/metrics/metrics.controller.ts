@@ -1,7 +1,10 @@
-import { BadRequestException, Controller, Get, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { Phase, Role } from '@prisma/client';
+import { OperationalMetric, Phase, Prisma, Role } from '@prisma/client';
+import { Audited } from '../../common/decorators/audited.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { PrismaService } from '../../prisma/prisma.service';
+import { RecordBaselineDto } from './dto/record-baseline.dto';
 import { ExperimentalMetrics, MetricsService } from './metrics.service';
 
 @ApiTags('metrics')
@@ -9,7 +12,28 @@ import { ExperimentalMetrics, MetricsService } from './metrics.service';
 @Roles(Role.ADMIN)
 @Controller('metrics')
 export class MetricsController {
-  constructor(private readonly metricsService: MetricsService) {}
+  constructor(
+    private readonly metricsService: MetricsService,
+    private readonly prisma: PrismaService,
+  ) {}
+
+  @Post('baseline')
+  @Audited({ entity: 'OperationalMetric', action: 'BASELINE_MEASUREMENT' })
+  @ApiOperation({
+    summary:
+      'Registrar una medición BASELINE de campo (antes de operar el sistema) para la validación experimental',
+  })
+  recordBaseline(@Body() dto: RecordBaselineDto): Promise<OperationalMetric> {
+    return this.prisma.operationalMetric.create({
+      data: {
+        metricType: dto.metricType,
+        phase: Phase.BASELINE,
+        value: dto.value,
+        measuredAt: dto.measuredAt ? new Date(dto.measuredAt) : new Date(),
+        contextJson: (dto.contextJson ?? undefined) as Prisma.InputJsonValue | undefined,
+      },
+    });
+  }
 
   @Get('experimental')
   @ApiOperation({
