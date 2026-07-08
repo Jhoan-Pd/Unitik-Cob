@@ -1,6 +1,8 @@
 # Plan de Iteración 6 — Fase de Construcción (OpenUP)
 
-**Duración:** 4 semanas · **Estado: partes 1 y 2 entregadas — lista para cierre**
+**Duración:** 4 semanas · **Estado: ✅ CERRADA (2026-07-08) — cierra la Fase de Construcción**
+
+**Verificación de cierre:** `pnpm test` 78/78 (api) + 2/2 (web) · `pnpm lint` 0 errores · `pnpm typecheck` limpio · `pnpm test:e2e` 27/27 (7 suites).
 
 ## Objetivos
 

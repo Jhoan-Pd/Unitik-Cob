@@ -24,6 +24,18 @@ Leyenda: ✅ cubierto · 🔶 parcial/en diseño · ⬜ pendiente
 
 ## Historial por iteración
 
+### Iteración 6 (Fase Construcción) — CERRADA 2026-07-08 · **Fase 3 completada**
+**Entregado:** tickets con visibilidad por rol, cajero (efectivo validado al instante, recibo, cierre de caja), actas de instalación con firma, auditoría consultable/exportable CSV, dashboard KPIs, `/metrics/experimental` (4 métricas de la tesis), notificaciones (bandeja in-app, despachador con canales mock, recordatorios de mora y promesa), WebSockets Socket.io con JWT para el panel en tiempo real, reportes CSV de recaudo y clientes por plan, y los 3 paneles React de staff (admin/cajero/técnico).
+**Verificación de cierre:** `pnpm test` 78/78 + 2/2 web · lint 0 · typecheck limpio · e2e 27/27 (7 suites).
+**Avance de principios al cierre de la Construcción:**
+- **Responsabilidad ✅** — RBAC integral; cada acción con autor, IP y principio.
+- **Estrategia ✅** — continuidad operando (colas persistentes, reintentos, recordatorios preventivos); proveedores externos encapsulados en mocks conmutables.
+- **Adquisición ✅** — stack estable y justificado durante 7 iteraciones.
+- **Desempeño ✅ (instrumentado)** — SLA medido automáticamente; validación real en Fase 4.
+- **Conformidad ✅** — auditoría append-only consultable y exportable; trazabilidad de todas las reglas comerciales.
+- **Comportamiento humano ✅** — UI en español, promesas formales, avisos previos a suspensión, rate limiting.
+**Pendiente que pasa a Fase 4:** conexión de proveedores reales (MikroTik físico, WhatsApp/SMS/SMTP, Wompi productivo, Alegra/Siigo), métricas BASELINE de campo, capacitación y piloto.
+
 ### Iteración 5 (Fase Construcción) — CERRADA 2026-07-07
 **Entregado:** integración MikroTik — driver node-routeros tras la interfaz de 7 métodos (mock conmutable `MIKROTIK_MOCK`), CRUD de dispositivos con AES-256-GCM y estado online/offline, rate limiting 20 acciones/min, cola unificada `network-actions` (reconnect/suspend/change-profile), suspensión automática diaria por mora con gracia configurable (promesas protegidas), cambio de plan → perfil PPPoE.
 **Verificación de cierre:** `pnpm test` 70/70 + 2/2 web · lint 0 · typecheck limpio · e2e 22/22 (6 suites).
